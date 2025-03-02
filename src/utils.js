@@ -1,45 +1,37 @@
 const fs = require('fs');
 const path = require('path');
+const util = require('util');
 
+// Convertendo fs.appendFileSync para uma versão assíncrona
+const appendFileAsync = util.promisify(fs.appendFile);
+
+// Diretório de dados
 const dataDir = path.join(__dirname, '..', 'data');
 
-// Garantir que o diretório de dados existe
+// Garantir que o diretório de dados exista
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
 
 const logsPath = path.join(dataDir, 'logs.json');
 
-// Inicializar logs se não existirem
-if (!fs.existsSync(logsPath)) {
-  fs.writeFileSync(logsPath, JSON.stringify([], null, 2));
-}
-
 /**
- * Registra uma mensagem no arquivo de logs
- * @param {Object} msg - Objeto da mensagem do Telegram
- * @param {string} action - Ação realizada
+ * Registra uma mensagem no arquivo de logs de forma assíncrona.
  */
-function logMessage(msg, action) {
+async function logMessage(msg, action) {
+  const logEntry = {
+    timestamp: new Date().toISOString(),
+    userId: msg.from.id,
+    username: msg.from.username || 'N/A',
+    firstName: msg.from.first_name || 'N/A',
+    messageText: msg.text || '',
+    action,
+    chatId: msg.chat.id
+  };
+
   try {
-    const logs = JSON.parse(fs.readFileSync(logsPath));
-    
-    logs.push({
-      timestamp: new Date().toISOString(),
-      userId: msg.from.id,
-      username: msg.from.username || 'N/A',
-      firstName: msg.from.first_name || 'N/A',
-      messageText: msg.text,
-      action,
-      chatId: msg.chat.id
-    });
-    
-    // Manter apenas os últimos 1000 logs
-    if (logs.length > 1000) {
-      logs.shift();
-    }
-    
-    fs.writeFileSync(logsPath, JSON.stringify(logs, null, 2));
+    // Adiciona a entrada no arquivo de logs de forma assíncrona
+    await appendFileAsync(logsPath, JSON.stringify(logEntry) + ',\n');
   } catch (error) {
     console.error('Erro ao registrar log:', error);
   }
@@ -47,9 +39,6 @@ function logMessage(msg, action) {
 
 /**
  * Formata a resposta de informação do DDD
- * @param {string} ddd - O DDD consultado
- * @param {Object} info - Informações do DDD
- * @returns {string} - Mensagem formatada
  */
 function formatDDDInfo(ddd, info) {
   return `
@@ -64,44 +53,22 @@ _Este DDD pertence à região ${getRegionName(info.state)}_
 
 /**
  * Retorna o nome da região do Brasil baseado no estado
- * @param {string} state - Nome do estado
- * @returns {string} - Nome da região
  */
 function getRegionName(state) {
   const regions = {
-    'Acre': 'Norte',
-    'Amapá': 'Norte',
-    'Amazonas': 'Norte',
-    'Pará': 'Norte',
-    'Rondônia': 'Norte',
-    'Roraima': 'Norte',
-    'Tocantins': 'Norte',
-    'Alagoas': 'Nordeste',
-    'Bahia': 'Nordeste',
-    'Ceará': 'Nordeste',
-    'Maranhão': 'Nordeste',
-    'Paraíba': 'Nordeste',
-    'Pernambuco': 'Nordeste',
-    'Piauí': 'Nordeste',
-    'Rio Grande do Norte': 'Nordeste',
-    'Sergipe': 'Nordeste',
-    'Distrito Federal': 'Centro-Oeste',
-    'Goiás': 'Centro-Oeste',
-    'Mato Grosso': 'Centro-Oeste',
-    'Mato Grosso do Sul': 'Centro-Oeste',
-    'Espírito Santo': 'Sudeste',
-    'Minas Gerais': 'Sudeste',
-    'Rio de Janeiro': 'Sudeste',
-    'São Paulo': 'Sudeste',
-    'Paraná': 'Sul',
-    'Rio Grande do Sul': 'Sul',
-    'Santa Catarina': 'Sul'
+    'Acre': 'Norte', 'Amapá': 'Norte', 'Amazonas': 'Norte', 'Pará': 'Norte',
+    'Rondônia': 'Norte', 'Roraima': 'Norte', 'Tocantins': 'Norte',
+    'Alagoas': 'Nordeste', 'Bahia': 'Nordeste', 'Ceará': 'Nordeste', 
+    'Maranhão': 'Nordeste', 'Paraíba': 'Nordeste', 'Pernambuco': 'Nordeste',
+    'Piauí': 'Nordeste', 'Rio Grande do Norte': 'Nordeste', 'Sergipe': 'Nordeste',
+    'Distrito Federal': 'Centro-Oeste', 'Goiás': 'Centro-Oeste', 
+    'Mato Grosso': 'Centro-Oeste', 'Mato Grosso do Sul': 'Centro-Oeste',
+    'Espírito Santo': 'Sudeste', 'Minas Gerais': 'Sudeste', 
+    'Rio de Janeiro': 'Sudeste', 'São Paulo': 'Sudeste',
+    'Paraná': 'Sul', 'Rio Grande do Sul': 'Sul', 'Santa Catarina': 'Sul'
   };
-  
+
   return regions[state] || 'desconhecida';
 }
 
-module.exports = {
-  logMessage,
-  formatDDDInfo
-};
+module.exports = { logMessage, formatDDDInfo, getRegionName };

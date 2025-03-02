@@ -4,10 +4,21 @@ const handlers = require('./handlers');
 
 console.log('Iniciando o bot...');
 
-// Criar uma instância do bot
-const bot = new TelegramBot(config.token, config.options);
+// Função para inicializar o bot e capturar erros
+function startBot() {
+  try {
+    // Criar uma instância do bot
+    const bot = new TelegramBot(config.token, config.options);
 
-// Configurar manipuladores de eventos
-handlers.setupHandlers(bot);
+    // Configurar manipuladores de eventos
+    handlers.setupHandlers(bot);
 
-console.log('Bot iniciado com sucesso!');
+    console.log('Bot iniciado com sucesso!');
+  } catch (error) {
+    // Caso ocorra algum erro na inicialização
+    console.error('Erro ao iniciar o bot:', error);
+  }
+}
+
+// Iniciar o bot
+startBot();
