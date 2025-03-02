@@ -7,12 +7,22 @@ const commands = require('./commands');
 function setupHandlers(bot) {
   // Manipular comando /start
   bot.onText(/\/start/, (msg) => {
+  try {
     commands.handleStart(bot, msg);
-  });
+  } catch (error) {
+    console.error('Erro no comando /start:', error);
+    bot.sendMessage(msg.chat.id, 'Ocorreu um erro ao processar o comando /start.');
+  }
+});
   
   // Manipular comando /help
   bot.onText(/\/help/, (msg) => {
+  	try{
     commands.handleHelp(bot, msg);
+  	} catch(error){
+  		console.error('Erri no comando/help', error);
+  		bot.sendMessage(msg.chat.id, 'Ocorreu um erro ao processar o comando /help')
+  	}
   });
   
   // Manipular comando /ddd
@@ -27,16 +37,21 @@ function setupHandlers(bot) {
   
   // Manipular mensagens de texto (DDD direto)
   bot.on('message', (msg) => {
-    // Ignorar comandos
-    if (msg.text && !msg.text.startsWith('/')) {
-      const text = msg.text.trim();
-      
-      // Verificar se o texto é apenas um número de DDD
-      if (/^\d{2}$/.test(text)) {
-        commands.handleDDDCheck(bot, msg, text);
+  // Ignorar comandos e mensagens vazias
+  if (msg.text && !msg.text.startsWith('/') && msg.text.trim() !== '') {
+    const text = msg.text.trim();
+    
+    // Verificar se o texto é um DDD válido
+    if (/^\d{2}$/.test(text)) {
+      const ddd = text;
+      if (validDDDs.includes(ddd)) {
+        commands.handleDDDCheck(bot, msg, ddd);
+      } else {
+        bot.sendMessage(msg.chat.id, 'DDD inválido. Tente outro DDD.');
       }
     }
-  });
+  }
+});
   
   // Manipular erros
   bot.on('polling_error', (error) => {
