@@ -1,0 +1,28 @@
+{
+  "name": "bot-hacker-ddd",
+  "version": "1.0.0",
+  "description": "Bot do telegram para verificação de DDD",
+  "main": "src/bot.js",
+  "scripts": {
+    "test": "none"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/borgelevisberg17/bot-verificador-ddd.git"
+  },
+  "keywords": [
+    "Bot",
+    "Verificar",
+    "ddd"
+  ],
+  "author": "@borgelevisberg",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/borgelevisberg17/bot-verificador-ddd/issues"
+  },
+  "homepage": "https://github.com/borgelevisberg17/bot-verificador-ddd#readme",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "node-telegram-bot-api": "^0.66.0"
+  }
+}
